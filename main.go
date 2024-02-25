@@ -143,7 +143,7 @@ func main() {
 			Weight:       85,
 		},
 		LengthPool: 50,
-		CountPool:  40,
+		CountPool:  5,
 	}
 
 	fmt.Println(ReadData(swimming))
@@ -151,12 +151,12 @@ func main() {
 	walking := Walking{
 		Training: Training{
 			TrainingType: "Ходьба",
-			Action:       10000,
+			Action:       20000,
 			LenStep:      LenStep,
-			Duration:     2 * time.Hour,
-			Weight:       70,
+			Duration:     3*time.Hour + 45*time.Minute,
+			Weight:       85,
 		},
-		Height: 175,
+		Height: 185,
 	}
 
 	fmt.Println(ReadData(walking))
@@ -164,12 +164,13 @@ func main() {
 	running := Running{
 		Training: Training{
 			TrainingType: "Бег",
-			Action:       3000,
+			Action:       5000,
 			LenStep:      LenStep,
 			Duration:     30 * time.Minute,
-			Weight:       70,
+			Weight:       85,
 		},
 	}
 
 	fmt.Println(ReadData(running))
+
 }
