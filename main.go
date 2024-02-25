@@ -12,11 +12,11 @@ const (
 	MinInHours                       = 60
 	LenStep                          = 0.65
 	CmInM                            = 100
+	KmHInMsec                        = 0.278
 	CaloriesMeanSpeedMultiplier      = 18
 	CaloriesMeanSpeedShift           = 1.79
 	CaloriesWeightMultiplier         = 0.035
 	CaloriesSpeedHeightMultiplier    = 0.029
-	KmHInMsec                        = 0.278
 	SwimmingLenStep                  = 1.38
 	SwimmingCaloriesMeanSpeedShift   = 1.1
 	SwimmingCaloriesWeightMultiplier = 2
@@ -39,7 +39,7 @@ func (t Training) meanSpeed() float64 {
 }
 
 func (t Training) Calories() float64 {
-	return 0 // Будет переопределён в каждом подтипе
+	return 0
 }
 
 type InfoMessage struct {
@@ -48,16 +48,6 @@ type InfoMessage struct {
 	Distance     float64
 	Speed        float64
 	Calories     float64
-}
-
-func (i InfoMessage) String() string {
-	return fmt.Sprintf("Тип тренировки: %s\nДлительность: %v мин\nДистанция: %.2f км.\nСр. скорость: %.2f км/ч\nПотрачено ккал: %.2f\n",
-		i.TrainingType,
-		i.Duration.Minutes(),
-		i.Distance,
-		i.Speed,
-		i.Calories,
-	)
 }
 
 type CaloriesCalculator interface {
@@ -130,7 +120,8 @@ func (s Swimming) TrainingInfo() InfoMessage {
 }
 
 func ReadData(training CaloriesCalculator) string {
-	return fmt.Sprint(training.TrainingInfo())
+	info := training.TrainingInfo()
+	return fmt.Sprint(info)
 }
 
 func main() {
