@@ -119,6 +119,16 @@ func (s Swimming) TrainingInfo() InfoMessage {
 	}
 }
 
+func (i InfoMessage) String() string {
+	return fmt.Sprintf("Тип тренировки: %s\nДлительность: %v мин\nДистанция: %.2f км.\nСр. скорость: %.2f км/ч\nПотрачено ккал: %.2f\n",
+		i.TrainingType,
+		i.Duration.Minutes(),
+		i.Distance,
+		i.Speed,
+		i.Calories,
+	)
+}
+
 func ReadData(training CaloriesCalculator) string {
 	info := training.TrainingInfo()
 	return fmt.Sprint(info)
