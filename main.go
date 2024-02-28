@@ -2,21 +2,18 @@ package main
 
 import (
 	"fmt"
-	"math"
 	"time"
 )
 
-// Общие константы для вычислений.
 const (
 	MInKm                            = 1000
 	MinInHours                       = 60
 	LenStep                          = 0.65
-	CmInM                            = 100
-	KmHInMsec                        = 0.278
 	CaloriesMeanSpeedMultiplier      = 18
 	CaloriesMeanSpeedShift           = 1.79
 	CaloriesWeightMultiplier         = 0.035
 	CaloriesSpeedHeightMultiplier    = 0.029
+	KmHInMsec                        = 0.278
 	SwimmingLenStep                  = 1.38
 	SwimmingCaloriesMeanSpeedShift   = 1.1
 	SwimmingCaloriesWeightMultiplier = 2
@@ -35,11 +32,25 @@ func (t Training) distance() float64 {
 }
 
 func (t Training) meanSpeed() float64 {
-	return t.distance() / t.Duration.Hours()
+	durationInHours := t.Duration.Hours()
+	if durationInHours == 0 {
+		return 0
+	}
+	return t.distance() / durationInHours
 }
 
 func (t Training) Calories() float64 {
 	return 0
+}
+
+func (t Training) TrainingInfo() InfoMessage {
+	return InfoMessage{
+		TrainingType: t.TrainingType,
+		Duration:     t.Duration,
+		Distance:     t.distance(),
+		Speed:        t.meanSpeed(),
+		Calories:     t.Calories(),
+	}
 }
 
 type InfoMessage struct {
@@ -61,17 +72,7 @@ type Running struct {
 
 func (r Running) Calories() float64 {
 	speed := r.meanSpeed()
-	return ((CaloriesMeanSpeedMultiplier*speed + CaloriesMeanSpeedShift) * r.Weight / MInKm * r.Duration.Hours() * MinInHours)
-}
-
-func (r Running) TrainingInfo() InfoMessage {
-	return InfoMessage{
-		TrainingType: r.TrainingType,
-		Duration:     r.Duration,
-		Distance:     r.distance(),
-		Speed:        r.meanSpeed(),
-		Calories:     r.Calories(),
-	}
+	return (CaloriesMeanSpeedMultiplier*speed + CaloriesMeanSpeedShift) * r.Weight / MInKm * r.Duration.Hours() * MinInHours
 }
 
 type Walking struct {
@@ -80,18 +81,11 @@ type Walking struct {
 }
 
 func (w Walking) Calories() float64 {
-	speedMPerSec := w.meanSpeed() * KmHInMsec
-	return ((CaloriesWeightMultiplier*w.Weight + (math.Pow(speedMPerSec, 2)/w.Height)*CaloriesSpeedHeightMultiplier*w.Weight) * w.Duration.Hours() * MinInHours)
-}
-
-func (w Walking) TrainingInfo() InfoMessage {
-	return InfoMessage{
-		TrainingType: w.TrainingType,
-		Duration:     w.Duration,
-		Distance:     w.distance(),
-		Speed:        w.meanSpeed(),
-		Calories:     w.Calories(),
+	speedInMetersPerSecond := w.meanSpeed() * KmHInMsec
+	if w.Height == 0 {
+		return 0
 	}
+	return (CaloriesWeightMultiplier*w.Weight + (speedInMetersPerSecond*speedInMetersPerSecond/w.Height)*CaloriesSpeedHeightMultiplier*w.Weight) * w.Duration.Hours() * MinInHours
 }
 
 type Swimming struct {
@@ -101,37 +95,27 @@ type Swimming struct {
 }
 
 func (s Swimming) meanSpeed() float64 {
+	if s.Duration.Hours() == 0 {
+		return 0
+	}
 	return float64(s.LengthPool*s.CountPool) / MInKm / s.Duration.Hours()
 }
 
 func (s Swimming) Calories() float64 {
 	speed := s.meanSpeed()
-	return ((speed + SwimmingCaloriesMeanSpeedShift) * SwimmingCaloriesWeightMultiplier * s.Weight * s.Duration.Hours())
-}
-
-func (s Swimming) TrainingInfo() InfoMessage {
-	return InfoMessage{
-		TrainingType: s.TrainingType,
-		Duration:     s.Duration,
-		Distance:     s.distance(),
-		Speed:        s.meanSpeed(),
-		Calories:     s.Calories(),
-	}
-}
-
-func (i InfoMessage) String() string {
-	return fmt.Sprintf("Тип тренировки: %s\nДлительность: %v мин\nДистанция: %.2f км.\nСр. скорость: %.2f км/ч\nПотрачено ккал: %.2f\n",
-		i.TrainingType,
-		i.Duration.Minutes(),
-		i.Distance,
-		i.Speed,
-		i.Calories,
-	)
+	return (speed + SwimmingCaloriesMeanSpeedShift) * SwimmingCaloriesWeightMultiplier * s.Weight * s.Duration.Hours()
 }
 
 func ReadData(training CaloriesCalculator) string {
+	calories := training.Calories()
 	info := training.TrainingInfo()
-	return fmt.Sprint(info)
+	info.Calories = calories
+	return fmt.Sprintf("Тип тренировки: %s\nДлительность: %v мин\nДистанция: %.2f км.\nСр. скорость: %.2f км/ч\nПотрачено ккал: %.2f\n",
+		info.TrainingType,
+		info.Duration.Minutes(),
+		info.Distance,
+		info.Speed,
+		info.Calories)
 }
 
 func main() {
